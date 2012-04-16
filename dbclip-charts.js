@@ -1,4 +1,3 @@
-
 function register(acceptsFn, factoryFn) {
     // acceptsFn(specline, metadata)
     //   return true if associated factoryFn can
@@ -22,23 +21,68 @@ function ofField(field) {
 
 /**
    Massage the data types of this result set to provide strongly typed
-   objects corresponding to the provided String representations.
-
-   
+   objects corresponding to the provided String representations.   
 */
-function massageTypes(dataset) {
-
+function massageData(dataset) {
+	var result = [];
+	for (var i = 0; i < dataset.length; i++) {
+		var newrow = {};
+		var oldrow = dataset[i];
+		for (var key in oldrow) {
+			if (oldrow.hasOwnProperty(key)) {
+				newrow[key] = parse(oldrow[key]);
+			}
+		}
+		result.push(newrow);
+	}
+	return result;
 }
+
+// N.B.: We currently truncate to the second
+var dateregexp = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/
+
+/**
+
+   Parse the date in the given string and return a Date object represeting
+   the same date; or return null if the string does not specify a date.
+
+   The accepted format is
+
+   2000-01-01T12:13:14+00:00
+*/
+function parseDate(datestr) {
+	if (datestr == null) {
+		return null;
+	}
+	var dateparts = datestr.match(dateregexp);
+	if (!dateparts) {
+		return null;
+	} else {
+		// N.B.: the date parts here are obviously strings but they
+		// are coerced to numbers in building the date object, so we
+		// don't need to do that by hand
+		return new Date(dateparts[1], dateparts[2], dateparts[3],
+						dateparts[4], dateparts[5], dateparts[6]);
+	}
+}
+
 /**
    Attempt to parse the given String value using some basic heuristics.
 
    Essentially, if it parses as a Number, assume it's a Number. If it
    parses as a Date, assume it's a Date. Otherwise, assume it's a String.
+
+   Note that we are currently very conservative and only guess Number
+   for types with no leading or trailing spaces (this is how we expect
+   the data to come in anyway).
 */
 function parse(value) {
-	var result = Date.parse(value);
-	if (!isNaN(result)) {
-		return new Date(result);
+	if (value == null) {
+		return value;
+	}
+	var result = parseDate(value);
+	if (result != null) {
+		return result
 	}
 	result = parseFloat(value)
 	// N.B.; we need this second check so something like "12 Angry Men"
@@ -49,20 +93,37 @@ function parse(value) {
 	return value;
 }
 
+
 /**
    Determine the data types of all the columns in the given dataset.
    A dataset is expected to be an array of Objects, each with a uniform
    mapping of keys (column names) to values (the values for that column
    in each row).
 
-   Returns an Array of Objects with two properties, `name` and `type`,
-   describing the data.
+   Returns an Object mapping column names to their data types.
 */
 function determineTypes(dataset) {
-	if (dataset.length === 0) {
+	if (dataset == null || dataset.length == 0) {
 		return null;
 	}
-	
+	var result = {};
+	// TODO: look at other columns to sanity-check types
+	var row = dataset[0];
+	for (var key in row) {
+		if (row.hasOwnProperty(key)) {
+			var value = row[key];
+			var type;
+			if (typeof value == 'number') {
+				type = Number;
+			} else if (typeof value == 'string') {
+				type = String;
+			} else if (value instanceof Date) {
+				type = Date;
+			}
+			result[key] = type;
+		}
+	}
+	return result;
 }
 
 function getDomain(data, field) {
