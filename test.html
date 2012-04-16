@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <title>d3 test</title>
+    <script type="text/javascript" src="./d3-v2.8.1.js"></script>
+    <script type="text/javascript" src="./jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="./autograph.js"></script>
+    <style type="text/css">
+        .chart rect {
+            fill: steelblue;
+            stroke: white;
+        }
+    </style>
+  </head>
+  <body>
+    <div>
+      <input id="update-data" type="checkbox"/>Update data
+    </div>
+    <div id="chart-container"/>
+    <script type="text/javascript">
+      var updateData = false;
+
+      $(document).ready(function() {
+          $("#update-data").change(function(event) {
+              updateData = event.target.checked;
+          });
+      });
+
+      var t = 1297110663, // start time (seconds since epoch)
+          v = 70; // start value (subscribers)
+
+      // Simple data generation function
+      function next() {
+          return {
+              time: ++t,
+              value: v = ~~Math.max(10, Math.min(90, v + 10 * (Math.random() - .5)))
+          };
+      }
+
+      var data = d3.range(33).map(next); // starting dataset
+
+      var w = 400, h = 80;
+
+      var chart = d3.select("#chart-container").append("svg")
+          .attr("class", "chart")
+          .attr("width", w)
+          .attr("height", h);
+
+      function redraw() {
+          var xScale = getScale(getDomain(data, 'time'));
+          var yScale = getScale(getDomain(data, 'value'), true);
+
+          var x = xScale.range([0, w]);
+          var y = yScale.range([0, h]);
+
+          var xFn = function(d) { return x(d.time) - .5; };
+          var yFn = function(d) { return h - y(d.value) - .5; };
+
+          var wFn = function(d) { return w / data.length - 3; };
+          var hFn = function(d) { return y(d.value); };
+
+
+          var rect = chart.selectAll("rect")
+              .data(data, function(d) { return d.time; });
+
+          // Enter...
+          rect.enter().insert("rect", "line")
+              .attr("x", xFn).attr("y", yFn)
+              .attr("width", wFn).attr("height", hFn);
+ 
+          // Update... N.B.: we reposition and resize as axes may have changed
+          rect.transition()
+              .duration(1000)
+              .attr("x", xFn).attr("y", yFn).attr("height", hFn);
+ 
+          // Exit...
+          rect.exit()
+              .transition()
+              .duration(1000)
+              .attr("x", xFn).attr("y", yFn).attr("height", hFn)
+              .remove();
+      };
+
+      redraw();
+
+      setInterval(function() {
+          if (updateData) {
+              data.shift();
+              data.push(next());
+              redraw();
+          }
+      }, 1500);
+
+    </script>
+  </body>
+</html>
