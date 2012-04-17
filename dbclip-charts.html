@@ -17,31 +17,31 @@
 	  <input id="update-data" type="button" value="load data"></input>
 	</div>
 	-->
-    <div id="chart-container"/>
+    <div id="chart-container" style="padding-left:100px"></div>
     <script type="text/javascript">
       var w = 800, h = 400;
 	  
 	  var data = [
 	      { col1: '2001-01-01T00:00:00', col2: 'foo', col3: '12' },
-	      { col1: '2001-01-01T00:00:05', col2: 'bar', col3: '13' },
-	      { col1: '2001-01-01T00:00:10', col2: 'baz', col3: '15' },
-	      { col1: '2001-01-01T00:00:15', col2: 'foo', col3: '11' },
-	      { col1: '2001-01-01T00:00:20', col2: 'bar', col3: '19' },
-	      { col1: '2001-01-01T00:00:25', col2: 'baz', col3: '18' },
-	      { col1: '2001-01-01T00:00:30', col2: 'foo', col3: '14' },
-	      { col1: '2001-01-01T00:00:35', col2: 'bar', col3: '17' },
-	      { col1: '2001-01-01T00:00:40', col2: 'baz', col3: '10' },
-	      { col1: '2001-01-01T00:00:45', col2: 'foo', col3: '8' },
-	      { col1: '2001-01-01T00:00:50', col2: 'bar', col3: '22' },
-	      { col1: '2001-01-01T00:00:55', col2: 'baz', col3: '21' },
-	      { col1: '2001-01-01T00:01:00', col2: 'foo', col3: '20' },
-	      { col1: '2001-01-01T00:01:05', col2: 'bar', col3: '14' },
-	      { col1: '2001-01-01T00:01:10', col2: 'baz', col3: '15' },
-	      { col1: '2001-01-01T00:01:15', col2: 'foo', col3: '17' },
-	      { col1: '2001-01-01T00:01:20', col2: 'bar', col3: '19' },
-	      { col1: '2001-01-01T00:01:25', col2: 'baz', col3: '20' },
-	      { col1: '2001-01-01T00:01:30', col2: 'foo', col3: '11' },
-	      { col1: '2001-01-01T00:01:35', col2: 'bar', col3: '15' }
+	      { col1: '2001-01-02T00:00:00', col2: 'bar', col3: '13' },
+	      { col1: '2001-01-03T00:00:00', col2: 'baz', col3: '15' },
+	      { col1: '2001-01-04T00:00:00', col2: 'foo', col3: '11' },
+	      { col1: '2001-01-05T00:00:00', col2: 'bar', col3: '19' },
+	      { col1: '2001-01-06T00:00:00', col2: 'baz', col3: '18' },
+	      { col1: '2001-01-07T00:00:00', col2: 'foo', col3: '14' },
+	      { col1: '2001-01-08T00:00:00', col2: 'bar', col3: '17' },
+	      { col1: '2001-01-09T00:00:00', col2: 'baz', col3: '10' },
+	      { col1: '2001-01-10T00:00:00', col2: 'foo', col3: '8' },
+	      { col1: '2001-01-11T00:00:00', col2: 'bar', col3: '22' },
+	      { col1: '2001-01-12T00:00:00', col2: 'baz', col3: '21' },
+	      { col1: '2001-01-13T00:01:00', col2: 'foo', col3: '20' },
+	      { col1: '2001-01-14T00:01:00', col2: 'bar', col3: '14' },
+	      { col1: '2001-01-15T00:01:00', col2: 'baz', col3: '15' },
+	      { col1: '2001-01-16T00:01:00', col2: 'foo', col3: '17' },
+	      { col1: '2001-01-17T00:01:00', col2: 'bar', col3: '19' },
+	      { col1: '2001-01-18T00:01:00', col2: 'baz', col3: '20' },
+	      { col1: '2001-01-19T00:01:00', col2: 'foo', col3: '11' },
+	      { col1: '2001-01-20T00:01:00', col2: 'bar', col3: '15' }
 	  ];
 	  var massaged = massageData(data);
 	  var metadata = determineTypes(massaged);

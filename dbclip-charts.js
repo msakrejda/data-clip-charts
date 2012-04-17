@@ -133,14 +133,6 @@ function getDomain(data, field) {
     return d3.extent(data, ofField(field));
 }
 
-function getScale(domain, rounded) {
-    var scale = d3.scale.linear().domain(domain);
-    if (rounded) {
-		scale.nice();
-    }
-    return scale;
-}
-
 // create chart with given metadata by appending to given element
 function BarChart(id, width, height, metadata) {
 	for (var key in metadata) {
@@ -155,8 +147,13 @@ function BarChart(id, width, height, metadata) {
 	}
 
 	this.id = id;
+
 	this.width = width;
 	this.height = height;
+
+	this.xmargin = 50;
+	this.ymargin = 40;
+
 	this.metadata = metadata;
 }
 
@@ -169,28 +166,90 @@ BarChart.prototype = {
 		var chart = d3.select(that.id).append("svg")
 			.attr("class", "chart")
 			.attr("width", that.width)
-			.attr("height", that.height);	
+			.attr("height", that.height);
 
-        var xScale = getScale(d3.extent(data, function(d) {
-			return d[that.dateCol].getTime();
-		}));
-        var yScale = getScale([0, d3.max(data, ofField(that.numCol))], true);
+        var xScale = d3.time.scale().domain(
+			d3.extent(data, function(d) {
+				return d[that.dateCol].getTime();
+			})
+		);
+        var yScale = d3.scale.linear().domain(
+			// Start our scale at zero; it may be useful to support
+			// scales based on data values in the future, but this
+			// is a simpler default
+			[0, d3.max(data, ofField(that.numCol))]
+		).nice();
 
-        var x = xScale.range([0, that.width]);
-        var y = yScale.range([0, that.height]);
+        var x = xScale.range([0, that.width - that.xmargin]);
+		// N.B.: the y scale is "backwards", but this is more useful
+		// (especially in re: labeling axes), because the SVG coordinate
+		// system itself is "backwards"
+        var y = yScale.range([that.height - that.ymargin, 0]);
 
-        var xFn = function(d) { return x(d[that.dateCol].getTime()) - .5; };
-        var yFn = function(d) { return h - y(d[that.numCol]) - .5; };
+		// Add axes
+		var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom")
+            .ticks(4)
+            .tickSize(5, 2, 0)
+            .tickPadding(3);
+		var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(3)
+            .tickSize(5, 2, 0)
+            .tickPadding(3);
 
-        var wFn = function(d) { return w / data.length - 3; };
-        var hFn = function(d) { return y(d[that.numCol]); };
+		chart.append("line")
+			.attr("stroke", "black").attr("stroke-width", 1)
+		    .attr("x1", that.xmargin).attr("y1", that.height - that.ymargin + 1.5)
+		    .attr("x2", that.width).attr("y2", that.height - that.ymargin + 1.5)
+		chart.append("line")
+			.attr("stroke", "black").attr("stroke-width", 1)
+		    .attr("x1", that.xmargin - 2.5).attr("y1", 0)
+		    .attr("x2", that.xmargin - 2.5).attr("y2", that.height - that.ymargin)
 
+		chart.append("text")
+			.attr("transform", "translate("
+				  + ((that.xmargin + that.width) / 2) + ","
+				  + that.height + ")")
+			.attr("text-anchor", "middle")
+			.attr("font-size", "1.5em")
+			.text(that.numCol);
+
+		chart.append("text")
+			.attr("transform", "translate("
+				  + ((that.xmargin + that.width) / 2) + ","
+				  + that.height + ")")
+			.attr("text-anchor", "middle")
+			.attr("font-size", "1.5em")
+			.text(that.numCol);
+
+
+		chart.append("g")
+			.attr("class", "x-axis")
+			.attr("transform", "translate(" + (that.xmargin + 10) + ","
+				  + (that.height - that.ymargin) + ")")
+			.call(xAxis);
+		chart.append("g")
+			.attr("class", "y-axis")
+			.attr("transform", "translate(" + that.xmargin + ",0)")
+			.call(yAxis);
+
+
+		// Element mapping functions
+        var xFn = function(d) { return x(d[that.dateCol]) - .5; };
+        var yFn = function(d) { return y(d[that.numCol]) + that.ymargin - .5; };
+
+        var wFn = function(d) { return (that.width - that.xmargin) / data.length - 5; };
+        var hFn = function(d) { return that.height - that.ymargin - y(d[that.numCol]) - .5; };
 
         var rect = chart.selectAll("rect")
-            .data(data, function(d) { return d.time; });
+            .data(data, function(d) { return d[that.dateCol]; });
 
         // Respond to incoming data
-        rect.enter().insert("rect", "line")
+        rect.enter().insert("rect")
+		    .attr("transform", "translate(" + that.xmargin + ",-" + that.ymargin + ")")
             .attr("x", xFn).attr("y", yFn)
             .attr("width", wFn).attr("height", hFn);
 
