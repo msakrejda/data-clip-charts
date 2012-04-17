@@ -50,5 +50,24 @@ $(document).ready(function() {
 		equal(result['col3'], Date, "date column recognized");
 	});
 
+	module("specline parsing");
+
+	test("BarChart.parseSpecline", function() {
+		var simpleResult = BarChart.parseSpecline("bar");
+		equal(simpleResult.x, null, "default x");
+		equal(simpleResult.y, null, "default y");
+		var xSpecified = BarChart.parseSpecline("bar with col1 as x");
+		equal(xSpecified.x, "col1", "x recognized");
+		equal(xSpecified.y, null, "default y");
+		var ySpecified = BarChart.parseSpecline("bar with col2 as y");
+		equal(ySpecified.x, null, "default x");
+		equal(ySpecified.y, "col2", "y recognized");
+		var bothSpecified = BarChart.parseSpecline("bar with col1 as x, col2 as y");
+		equal(bothSpecified.x, "col1", "x recognized");
+		equal(bothSpecified.y, "col2", "y recognized");
+
+	});
+	
+
 
 });

@@ -157,6 +157,26 @@ function BarChart(id, width, height, metadata) {
 	this.metadata = metadata;
 }
 
+// N.B.: this allows some undesireable speclines (e.g., "bar with"),
+// but that's probably not a huge deal and a fully correct regex would
+// be monstrous
+var barSpecRegex = /bar(?:\s+with(?:\s+(\S+)\s+as\s+x)?(?:,?\s+(\S+)\s+as\s+y)?)?/
+
+BarChart.parseSpecline = function(specline) {
+	if (specline == null) {
+		return null;
+	}
+	var match = specline.match(barSpecRegex);
+	if (!match) {
+		return null;
+	} else {
+		return {
+			x: match[1],
+			y: match[2]
+		};
+	}
+}
+
 BarChart.prototype = {
 	load: function(data) {
         var that = this;
