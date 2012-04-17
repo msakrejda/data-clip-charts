@@ -190,13 +190,13 @@ BarChart.prototype = {
 		var xAxis = d3.svg.axis()
             .scale(x)
             .orient("bottom")
-            .ticks(4)
+            .ticks(5)
             .tickSize(5, 2, 0)
             .tickPadding(3);
 		var yAxis = d3.svg.axis()
             .scale(y)
             .orient("left")
-            .ticks(3)
+            .ticks(4)
             .tickSize(5, 2, 0)
             .tickPadding(3);
 
@@ -218,12 +218,11 @@ BarChart.prototype = {
 			.text(that.numCol);
 
 		chart.append("text")
-			.attr("transform", "translate("
-				  + ((that.xmargin + that.width) / 2) + ","
-				  + that.height + ")")
+			.attr("transform", "translate(15,"
+				  + ((that.height - that.ymargin) / 2) + ") rotate(-90,0,0)")
 			.attr("text-anchor", "middle")
 			.attr("font-size", "1.5em")
-			.text(that.numCol);
+			.text(that.dateCol);
 
 
 		chart.append("g")
@@ -239,7 +238,7 @@ BarChart.prototype = {
 
 		// Element mapping functions
         var xFn = function(d) { return x(d[that.dateCol]) - .5; };
-        var yFn = function(d) { return y(d[that.numCol]) + that.ymargin - .5; };
+        var yFn = function(d) { return y(d[that.numCol]) - .5; };
 
         var wFn = function(d) { return (that.width - that.xmargin) / data.length - 5; };
         var hFn = function(d) { return that.height - that.ymargin - y(d[that.numCol]) - .5; };
@@ -249,7 +248,7 @@ BarChart.prototype = {
 
         // Respond to incoming data
         rect.enter().insert("rect")
-		    .attr("transform", "translate(" + that.xmargin + ",-" + that.ymargin + ")")
+		    .attr("transform", "translate(" + that.xmargin + ",0)")
             .attr("x", xFn).attr("y", yFn)
             .attr("width", wFn).attr("height", hFn);
 
