@@ -45,7 +45,10 @@
 	  ];
 	  var massaged = massageData(data);
 	  var metadata = determineTypes(massaged);
-	  var b = new BarChart("#chart-container", w, h, metadata);
+	  var specline = "bar"
+
+	  var b = new BarChart(specline, metadata);
+	  b.initialize("#chart-container", w, h);
 	  b.load(massaged);
     </script>
   </body>

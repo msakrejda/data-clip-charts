@@ -134,25 +134,19 @@ function getDomain(data, field) {
 }
 
 // create chart with given metadata by appending to given element
-function BarChart(id, width, height, metadata) {
+function BarChart(specline, metadata) {
+	var spec = BarChart.parseSpecline(specline);
 	for (var key in metadata) {
-		if (metadata[key] == Date) {
+		if (metadata[key] == Date && (this.dateCol == null || key == spec.x)) {
 			this.dateCol = key;
-		} else if (metadata[key] == Number) {
+		} else if (metadata[key] == Number && (this.numCol == null || key == spec.y)) {
 			this.numCol = key;
 		}
 	}
+	// TODO: more informative error messages
 	if (this.dateCol == null || this.numCol == null) {
-		throw new Error("Bar chart not possible with this metadata.");
+		throw new Error("Bar chart not possible with this specline and metadata.");
 	}
-
-	this.id = id;
-
-	this.width = width;
-	this.height = height;
-
-	this.xmargin = 50;
-	this.ymargin = 40;
 
 	this.metadata = metadata;
 }
@@ -178,15 +172,23 @@ BarChart.parseSpecline = function(specline) {
 }
 
 BarChart.prototype = {
+	initialize: function(id, width, height) {
+		this.id = id;
+
+		this.width = width;
+		this.height = height;
+
+		this.xmargin = 50;
+		this.ymargin = 40;
+
+		this.chart = d3.select(id).append("svg")
+			.attr("class", "chart")
+			.attr("width", width)
+			.attr("height", height);
+	},
+
 	load: function(data) {
         var that = this;
-
-		// N.B.: we add the chart here; if we want to be able to
-		// refresh data, we shoul move that elsewhere
-		var chart = d3.select(that.id).append("svg")
-			.attr("class", "chart")
-			.attr("width", that.width)
-			.attr("height", that.height);
 
         var xScale = d3.time.scale().domain(
 			d3.extent(data, function(d) {
@@ -221,35 +223,35 @@ BarChart.prototype = {
             .tickSize(5, 2, 0)
             .tickPadding(3);
 
-		chart.append("line")
+		that.chart.append("line")
 			.attr("stroke", "black").attr("stroke-width", 1)
 		    .attr("x1", that.xmargin).attr("y1", that.height - that.ymargin + 1.5)
 		    .attr("x2", that.width).attr("y2", that.height - that.ymargin + 1.5)
-		chart.append("line")
+		that.chart.append("line")
 			.attr("stroke", "black").attr("stroke-width", 1)
 		    .attr("x1", that.xmargin - 2.5).attr("y1", 0)
 		    .attr("x2", that.xmargin - 2.5).attr("y2", that.height - that.ymargin)
 
-		chart.append("text")
+		that.chart.append("text")
 			.attr("transform", "translate("
 				  + ((that.xmargin + that.width) / 2) + ","
 				  + that.height + ")")
 			.attr("text-anchor", "middle")
 			.attr("font-size", "1.5em")
 			.text(that.numCol);
-		chart.append("text")
+		that.chart.append("text")
 			.attr("transform", "translate(15,"
 				  + ((that.height - that.ymargin) / 2) + ") rotate(-90,0,0)")
 			.attr("text-anchor", "middle")
 			.attr("font-size", "1.5em")
 			.text(that.dateCol);
 
-		chart.append("g")
+		that.chart.append("g")
 			.attr("class", "x-axis")
 			.attr("transform", "translate(" + (that.xmargin + 10) + ","
 				  + (that.height - that.ymargin) + ")")
 			.call(xAxis);
-		chart.append("g")
+		that.chart.append("g")
 			.attr("class", "y-axis")
 			.attr("transform", "translate(" + that.xmargin + ",0)")
 			.call(yAxis);
@@ -260,7 +262,7 @@ BarChart.prototype = {
         var yFn = function(d) { return y(d[that.numCol]) - .5; };
         var hFn = function(d) { return that.height - that.ymargin - y(d[that.numCol]) - .5; };
 
-        var rect = chart.selectAll("rect")
+        var rect = that.chart.selectAll("rect")
             .data(data, function(d) { return d[that.dateCol]; });
 
         // Respond to incoming data
