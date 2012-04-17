@@ -141,10 +141,6 @@ function getScale(domain, rounded) {
     return scale;
 }
 
-function createBarChart(specline, metadata, data) {
-    /* */
-}
-
 // create chart with given metadata by appending to given element
 function BarChart(id, width, height, metadata) {
 	for (var key in metadata) {
@@ -157,9 +153,6 @@ function BarChart(id, width, height, metadata) {
 	if (this.dateCol == null || this.numCol == null) {
 		throw new Error("Bar chart not possible with this metadata.");
 	}
-
-	window.console.log('dateCol', this.dateCol);
-	window.console.log('numCol', this.numCol);
 
 	this.id = id;
 	this.width = width;
@@ -178,15 +171,10 @@ BarChart.prototype = {
 			.attr("width", that.width)
 			.attr("height", that.height);	
 
-
         var xScale = getScale(d3.extent(data, function(d) {
-			window.console.log('d is', d);
-			window.console.log('dateCol is', that.dateCol);
-			window.console.log(that);
-			
 			return d[that.dateCol].getTime();
 		}));
-        var yScale = getScale(getDomain(data, that.numCol), true);
+        var yScale = getScale([0, d3.max(data, ofField(that.numCol))], true);
 
         var x = xScale.range([0, that.width]);
         var y = yScale.range([0, that.height]);
