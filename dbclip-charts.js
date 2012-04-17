@@ -42,7 +42,6 @@ function massageData(dataset) {
 var dateregexp = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/
 
 /**
-
    Parse the date in the given string and return a Date object represeting
    the same date; or return null if the string does not specify a date.
 
@@ -61,8 +60,9 @@ function parseDate(datestr) {
 		// N.B.: the date parts here are obviously strings but they
 		// are coerced to numbers in building the date object, so we
 		// don't need to do that by hand
-		return new Date(dateparts[1], dateparts[2], dateparts[3],
-						dateparts[4], dateparts[5], dateparts[6]);
+		return new Date(
+			Date.UTC(dateparts[1], parseInt(dateparts[2]) - 1 /* months are 0-indexed */,
+					 dateparts[3], dateparts[4], dateparts[5], dateparts[6]));
 	}
 }
 
@@ -136,11 +136,75 @@ function getDomain(data, field) {
 function getScale(domain, rounded) {
     var scale = d3.scale.linear().domain(domain);
     if (rounded) {
-	scale.nice();
+		scale.nice();
     }
     return scale;
 }
 
 function createBarChart(specline, metadata, data) {
     /* */
+}
+
+// create chart with given metadata by appending to given element
+function BarChart(id, width, height, metadata) {
+	for (var key in metadata) {
+		if (metadata[key] == Date) {
+			this.dateCol = key;
+		} else if (metadata[key] == Number) {
+			this.numCol = key;
+		}
+	}
+	if (this.dateCol == null || this.numCol == null) {
+		throw new Error("Bar chart not possible with this metadata.");
+	}
+
+	window.console.log('dateCol', this.dateCol);
+	window.console.log('numCol', this.numCol);
+
+	this.id = id;
+	this.width = width;
+	this.height = height;
+	this.metadata = metadata;
+}
+
+BarChart.prototype = {
+	load: function(data) {
+        var that = this;
+
+		// N.B.: we add the chart here; if we want to be able to
+		// refresh data, we shoul move that elsewhere
+		var chart = d3.select(that.id).append("svg")
+			.attr("class", "chart")
+			.attr("width", that.width)
+			.attr("height", that.height);	
+
+
+        var xScale = getScale(d3.extent(data, function(d) {
+			window.console.log('d is', d);
+			window.console.log('dateCol is', that.dateCol);
+			window.console.log(that);
+			
+			return d[that.dateCol].getTime();
+		}));
+        var yScale = getScale(getDomain(data, that.numCol), true);
+
+        var x = xScale.range([0, that.width]);
+        var y = yScale.range([0, that.height]);
+
+        var xFn = function(d) { return x(d[that.dateCol].getTime()) - .5; };
+        var yFn = function(d) { return h - y(d[that.numCol]) - .5; };
+
+        var wFn = function(d) { return w / data.length - 3; };
+        var hFn = function(d) { return y(d[that.numCol]); };
+
+
+        var rect = chart.selectAll("rect")
+            .data(data, function(d) { return d.time; });
+
+        // Respond to incoming data
+        rect.enter().insert("rect", "line")
+            .attr("x", xFn).attr("y", yFn)
+            .attr("width", wFn).attr("height", hFn);
+
+	}
 }
