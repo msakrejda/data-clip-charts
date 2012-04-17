@@ -180,7 +180,8 @@ BarChart.prototype = {
 			[0, d3.max(data, ofField(that.numCol))]
 		).nice();
 
-        var x = xScale.range([0, that.width - that.xmargin]);
+        var barWidth = (that.width - that.xmargin) / data.length - 5;
+        var x = xScale.range([0, that.width - that.xmargin - barWidth]);
 		// N.B.: the y scale is "backwards", but this is more useful
 		// (especially in re: labeling axes), because the SVG coordinate
 		// system itself is "backwards"
@@ -216,14 +217,12 @@ BarChart.prototype = {
 			.attr("text-anchor", "middle")
 			.attr("font-size", "1.5em")
 			.text(that.numCol);
-
 		chart.append("text")
 			.attr("transform", "translate(15,"
 				  + ((that.height - that.ymargin) / 2) + ") rotate(-90,0,0)")
 			.attr("text-anchor", "middle")
 			.attr("font-size", "1.5em")
 			.text(that.dateCol);
-
 
 		chart.append("g")
 			.attr("class", "x-axis")
@@ -239,8 +238,6 @@ BarChart.prototype = {
 		// Element mapping functions
         var xFn = function(d) { return x(d[that.dateCol]) - .5; };
         var yFn = function(d) { return y(d[that.numCol]) - .5; };
-
-        var wFn = function(d) { return (that.width - that.xmargin) / data.length - 5; };
         var hFn = function(d) { return that.height - that.ymargin - y(d[that.numCol]) - .5; };
 
         var rect = chart.selectAll("rect")
@@ -250,7 +247,7 @@ BarChart.prototype = {
         rect.enter().insert("rect")
 		    .attr("transform", "translate(" + that.xmargin + ",0)")
             .attr("x", xFn).attr("y", yFn)
-            .attr("width", wFn).attr("height", hFn);
+            .attr("width", barWidth).attr("height", hFn);
 
 	}
 }
